@@ -1,4 +1,5 @@
 //
+
 //  Created by Jesse Squires
 //  http://www.hexedbits.com
 //
@@ -10,6 +11,12 @@
 //  The MIT License
 //  Copyright (c) 2013 Jesse Squires
 //  http://opensource.org/licenses/MIT
+
+//  JSMessage.m
+//  JSMessagesDemo
+//
+//  Created by Ahmed Ghalab on 12/6/13.
+//  Copyright (c) 2013 Hexed Bits. All rights reserved.
 //
 
 #import "JSMessage.h"
@@ -27,6 +34,18 @@
         _text = text ? text : @" ";
         _sender = sender;
         _date = date;
+    }
+    return self;
+}
+
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        // Set Default Values ..
+        self.mediaURL = nil;
+        self.textMessage = nil;
+        self.thumbnailImage = nil;
     }
     return self;
 }
@@ -65,6 +84,50 @@
     return [[[self class] allocWithZone:zone] initWithText:[self.text copy]
                                                     sender:[self.sender copy]
                                                       date:[self.date copy]];
+}
+#pragma mark - Intialization Methods
+- (instancetype)initWithTextMessage:(NSString*)text
+{
+    self = [super init];
+    if(self) {
+        self.type = JSTextMessage;
+        self.textMessage = text;
+    }
+    return self;
+
+}
+
+- (instancetype)initWithImageMessage:(UIImage *) thumbnailImage
+                  description:(NSString*) description
+                 linkedToURL:(NSURL*) mediaURL
+{
+    self = [super init];
+    if(self) {
+        self.type = JSImageMessage;
+        
+        self.thumbnailImage = thumbnailImage;
+        self.mediaURL = mediaURL;
+        
+        self.textMessage = description;
+    }
+    return self;
+}
+
+
+- (instancetype)initWithVideoMessage:(UIImage *) thumbnailImage
+                  description:(NSString*) description
+                 linkedToURL:(NSURL*) mediaURL
+{
+    self = [super init];
+    if(self) {
+        self.type = JSVideoMessage;
+        
+        self.thumbnailImage = thumbnailImage;
+        self.mediaURL = mediaURL;
+        
+        self.textMessage = description;
+    }
+    return self;
 }
 
 @end

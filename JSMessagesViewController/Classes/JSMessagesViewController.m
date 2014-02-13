@@ -24,6 +24,7 @@
 - (void)setup;
 
 - (void)sendPressed:(UIButton *)sender;
+- (void)attachImagePressed:(UIButton *)sender;
 
 - (void)handleTapGestureRecognizer:(UITapGestureRecognizer *)tap;
 
@@ -102,6 +103,12 @@
     [inputView.sendButton addTarget:self
                              action:@selector(sendPressed:)
                    forControlEvents:UIControlEventTouchUpInside];
+    
+    inputView.attachImageButton.enabled = YES;
+    [inputView.attachImageButton addTarget:self
+                                    action:@selector(attachImagePressed:)
+                          forControlEvents:UIControlEventTouchUpInside];
+    
     
     [self.view addSubview:inputView];
     _messageInputView = inputView;
@@ -197,11 +204,17 @@
     [self.delegate didSendText:[self.messageInputView.textView.text js_stringByTrimingWhitespace]
                     fromSender:self.sender
                         onDate:[NSDate date]];
+    // [self.delegate didSendMessageData:[[JSMessage alloc] initWithTextMessage:[self.messageInputView.textView.text js_stringByTrimingWhitespace]]];
 }
 
 - (void)handleTapGestureRecognizer:(UITapGestureRecognizer *)tap
 {
     [self.messageInputView.textView resignFirstResponder];
+}
+
+- (void)attachImagePressed:(UIButton *)sender
+{
+    [self.delegate didSendMessageData:[self.delegate attachedMediaMessage]];
 }
 
 #pragma mark - Table view data source
@@ -252,17 +265,19 @@
                                                reuseIdentifier:CellIdentifier];
     }
     
-    [cell setMessage:message];
-    [cell setAvatarImageView:avatar];
+    JSMessage* messageData = [self.dataSource messageForRowAtIndexPath:indexPath];
+    
+    [cell setMessage:messageData];
+    
     [cell setBackgroundColor:tableView.backgroundColor];
     
-	#if TARGET_IPHONE_SIMULATOR
-        cell.bubbleView.textView.dataDetectorTypes = UIDataDetectorTypeNone;
-	#else
-		cell.bubbleView.textView.dataDetectorTypes = UIDataDetectorTypeAll;
-	#endif
-	
-    if ([self.delegate respondsToSelector:@selector(configureCell:atIndexPath:)]) {
+    #if TARGET_IPHONE_SIMULATOR
+	cell.bubbleView.textView.dataDetectorTypes = UIDataDetectorTypeNone;
+    #else
+	cell.bubbleView.textView.dataDetectorTypes = UIDataDetectorTypeAll;
+    #endif
+    
+    if([self.delegate respondsToSelector:@selector(configureCell:atIndexPath:)]) {
         [self.delegate configureCell:cell atIndexPath:indexPath];
     }
     
@@ -280,12 +295,28 @@
                                                                      avatar:avatar != nil];
 }
 
+-(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    JSMessage* messageSelected = [self.dataSource messageForRowAtIndexPath:indexPath];
+    if (messageSelected && messageSelected.type == JSImageMessage )
+    {
+        [self.delegate shouldViewImageAtIndexPath:indexPath];
+    }
+    else if (messageSelected && messageSelected.type == JSVideoMessage)
+    {
+        [self.delegate shouldViewVideoAtIndexPath:indexPath];
+    }
+}
+
 #pragma mark - Messages view controller
 
 - (void)finishSend
 {
-    [self.messageInputView.textView setText:nil];
-    [self textViewDidChange:self.messageInputView.textView];
+    if (isToFlushInputView) {
+        [self.messageInputView.textView setText:nil];
+        [self textViewDidChange:self.messageInputView.textView];
+    }
+    
     [self.tableView reloadData];
 }
 

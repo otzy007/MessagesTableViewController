@@ -236,6 +236,17 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
     self.bubbleView.textView.text = text;
 }
 
+- (void)setMessage:(JSMessage *)msg
+{
+    self.bubbleView.textView.text = @"";
+    self.bubbleView.message = msg;
+    
+    if (msg.type == JSTextMessage) {
+        self.bubbleView.textView.text = msg.textMessage;
+    }
+    [self.bubbleView setMessageImage:msg.thumbnailImage];
+}
+
 - (void)setTimestamp:(NSDate *)date
 {
     self.timestampLabel.text = [NSDateFormatter localizedStringFromDate:date
@@ -272,6 +283,11 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
 
 #pragma mark - Class methods
 
+/* + (CGFloat)neededHeightForBubbleMessageCellWithMessage:(JSMessage *)message
+                                          timestamp:(BOOL)hasTimestamp
+                                             avatar:(BOOL)hasAvatar
+                                           subtitle:(BOOL)hasSubtitle */
+
 + (CGFloat)neededHeightForBubbleMessageCellWithMessage:(id<JSMessageData>)message
                                                 avatar:(BOOL)hasAvatar
 {
@@ -281,9 +297,10 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
     
     CGFloat subviewHeights = timestampHeight + subtitleHeight + kJSLabelPadding;
     
-    CGFloat bubbleHeight = [JSBubbleView neededHeightForText:[message text]];
+   // CGFloat bubbleHeight = [JSBubbleView neededHeightForText:[message text]];
+    CGSize bubbleSize = [JSBubbleView neededSizeForMessage:message];
     
-    return subviewHeights + MAX(avatarHeight, bubbleHeight);
+    return subviewHeights + MAX(avatarHeight, bubbleSize.height);
 }
 
 #pragma mark - Layout
@@ -307,16 +324,10 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
     return YES;
 }
 
-- (BOOL)becomeFirstResponder
-{
-    return [super becomeFirstResponder];
-}
-
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
-    return (action == @selector(copy:));
+    return (action == @selector(copy:) && ![self.bubbleView isImageMessage]);
 }
-
 - (void)copy:(id)sender
 {
     [[UIPasteboard generalPasteboard] setString:self.bubbleView.textView.text];
@@ -328,6 +339,9 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
 - (void)handleLongPressGesture:(UILongPressGestureRecognizer *)longPress
 {
     if (longPress.state != UIGestureRecognizerStateBegan || ![self becomeFirstResponder])
+        return;
+    
+    if ([self.bubbleView isImageMessage])
         return;
     
     UIMenuController *menu = [UIMenuController sharedMenuController];
@@ -343,6 +357,7 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
                                                  name:UIMenuControllerWillShowMenuNotification
                                                object:nil];
     [menu setMenuVisible:YES animated:YES];
+//    [self.bubbleView layoutSubviews];
 }
 
 #pragma mark - Notifications

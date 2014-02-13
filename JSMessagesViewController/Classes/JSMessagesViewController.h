@@ -15,6 +15,7 @@
 #import <UIKit/UIKit.h>
 #import "JSMessageTableView.h"
 #import "JSMessageData.h"
+#import "JSMessage.h"
 #import "JSBubbleMessageCell.h"
 #import "JSMessageInputView.h"
 #import "JSAvatarImageFactory.h"
@@ -36,7 +37,12 @@
  *  @param sender The user who sent the message.
  *  @param date   The date and time at which the message was sent.
  */
-- (void)didSendText:(NSString *)text fromSender:(NSString *)sender onDate:(NSDate *)date;
+// - (void)didSendText:(NSString *)text fromSender:(NSString *)sender onDate:(NSDate *)date;
+ *  Tells the delegate that the specified Message has been sent. Hook into your own backend here.
+ *
+ *  @param message A JSMessage object contains the full message information required either after pressing send button ( Text Message the messageInputView's textView )
+ */
+-(void) didSendMessageData:(JSMessage*) message;
 
 /**
  *  Asks the delegate for the message type for the row at the specified index path.
@@ -67,6 +73,21 @@
  *  @see JSMessageInputViewStyle.
  */
 - (JSMessageInputViewStyle)inputViewStyle;
+
+/**
+ *  Tells the delegate to show More Information about Image File.
+ *
+ *  @param indexPath A NSIndexPath object that give the inforamation about row index inside the messages List.
+ */
+-(void) shouldViewImageAtIndexPath:(NSIndexPath*) indexPath;
+
+
+/**
+ *  Tells the delegate to show More Information about Video File.
+ *
+ *  @param indexPath A NSIndexPath object that give the inforamation about row index inside the messages List.
+ */
+-(void) shouldViewVideoAtIndexPath:(NSIndexPath*) indexPath;
 
 @optional
 
@@ -116,6 +137,10 @@
  *  @return A string specifying the cell reuse identifier for the row at indexPath.
  */
 - (NSString *)customCellIdentifierForRowAtIndexPath:(NSIndexPath *)indexPath;
+ *  Tells the delegate to retrive an Media Data Message from the user device.
+ *
+ */
+- (JSMessage *) attachedMediaMessage;
 
 @end
 
@@ -127,6 +152,16 @@
 
 /**
  *  Asks the data soruce for the message object to display for the row at the specified index path. The message text is displayed in the bubble at index path. The message date is displayed *above* the row at the specified index path. The message sender is displayed *below* the row at the specified index path.
+ *  Asks the data source for the Message to display for the row at the specified index path.
+ *
+ *  @param indexPath An index path locating a row in the table view.
+ *
+ *  @return A Message Object contains (Text or Media Content). This value must not be `nil`.
+ */
+- (JSMessage*)messageForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+/**
+ *  Asks the data source for the date to display in the timestamp label *above* the row at the specified index path.
  *
  *  @param indexPath An index path locating a row in the table view.
  *
@@ -180,10 +215,13 @@
 #pragma mark - Messages view controller
 
 /**
- *  Animates and resets the text view in messageInputView. Call this method at the end of the delegate method `didSendText:`. 
+ *  Animates Without reseting the text view in messageInputView. Call this method at the end of the delegate method `didSendMessageData:`.
+ *
+ *  @param isToFlushInputView `YES` if you want to empty the text input fields after pressing 'send' button , `NO` if it was Media content Message.
+ *
  *  @see JSMessagesViewDelegate.
  */
-- (void)finishSend;
+- (void)finishSendingMessage:(BOOL) isToFlushInputView;
 
 
 /**

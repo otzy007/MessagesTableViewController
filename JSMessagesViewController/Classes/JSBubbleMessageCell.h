@@ -15,6 +15,7 @@
 #import <UIKit/UIKit.h>
 #import "JSBubbleView.h"
 #import "JSMessageData.h"
+/* #import "JSMessage.h" */
 
 /**
  *  The `JSBubbleMessageCell` class defines the attributes and behavior of the cells that appear in `JSMessagesViewController`. This class includes properties and methods for setting and managing cell content.
@@ -75,6 +76,16 @@
  *  @param message An object that conforms to the `JSMessageData` protocol containing the message data for the cell.
  */
 - (void)setMessage:(id<JSMessageData>)message;
+ *  @param msg The message Data for the cell.
+ */
+- (void)setMessage:(JSMessage *)msg;
+
+/**
+ *  Sets the date to be displayed in the timestampLabel of the cell. The date is formatted for you via `NSDateFormatter` by `JSBubbleMessageCell`.
+ *
+ *  @param date The date for the cell.
+ */
+/* - (void)setTimestamp:(NSDate *)date; */
 
 /**
  *  Sets the imageView for the avatarImageView of the cell. The frame is set for you by `JSBubbleMessageCell`.
@@ -105,5 +116,18 @@
  */
 + (CGFloat)neededHeightForBubbleMessageCellWithMessage:(id<JSMessageData>)message
                                                 avatar:(BOOL)hasAvatar;
+/*
+ *  @param message      The JSMessage data to be displayed inside the cell.
+ *  @param hasTimestamp A boolean value indicating whether or not the cell has a timestamp.
+ *  @param hasAvatar    A boolean value indicating whether or not the cell has an avatar.
+ *  @param hasSubtitle  A boolean value indicating whether or not the cell has a subtitle.
+ *
+ *  @return The height required for the frame of the cell in order for the cell to display the entire contents of its subviews.
+ */
+/*+ (CGFloat)neededHeightForBubbleMessageCellWithMessage:(JSMessage *)message
+                                          timestamp:(BOOL)hasTimestamp
+                                             avatar:(BOOL)hasAvatar
+                                           subtitle:(BOOL)hasSubtitle;
+*/
 
 @end
